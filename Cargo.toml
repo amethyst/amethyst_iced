@@ -1,0 +1,21 @@
+[package]
+name = "amethyst_iced"
+version = "0.1.0"
+authors = ["Olivier Pinon <oliv.pinon@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+amethyst = "0.15"
+failure = "0.1"
+glsl-layout = "0.3"
+iced_native = "0.2"
+iced_winit = "0.1.0"
+lazy_static = "1.4.0"
+log = "0.4.8"
+
+[features]
+default = ["amethyst/empty"]
+empty = ["amethyst/empty"]
+vulkan = ["amethyst/vulkan"]
+metal = ["amethyst/metal"]
+#dx12 = ["amethyst/dx12"]
