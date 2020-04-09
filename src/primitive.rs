@@ -1,7 +1,8 @@
 use crate::pass::IcedPass;
-use crate::vertex::IcedVertex;
+use crate::vertex::TriangleVertex;
 use amethyst::renderer::{rendy::factory::Factory, types::Backend};
 use iced_native::{Color, Rectangle};
+use glsl_layout::vec4;
 
 #[allow(dead_code)]
 pub enum AmethystIcedPrimitive {
@@ -39,22 +40,24 @@ impl AmethystIcedPrimitive {
                 }),
             AmethystIcedPrimitive::Quad(bounds, color) => {
                 let iced_color = color.unwrap_or(Color::WHITE);
-                let color = [iced_color.r, iced_color.g, iced_color.b, iced_color.a].into();
-                let vertex_buffer = pass.get_vertex_buffer_mut();
-                vertex_buffer.write(
+                let color: vec4 = [iced_color.r, iced_color.g, iced_color.b, iced_color.a].into();
+                pass
+                    .triangle_pipeline
+                    .vertex
+                    .write(
                     factory,
                     index,
                     6,
                     Some(&[
-                        IcedVertex {
+                        TriangleVertex {
                             position: [map_x(bounds.x), map_y(bounds.y)].into(),
                             color,
                         },
-                        IcedVertex {
+                        TriangleVertex {
                             position: [map_x(bounds.x + bounds.width), map_y(bounds.y)].into(),
                             color,
                         },
-                        IcedVertex {
+                        TriangleVertex {
                             position: [
                                 map_x(bounds.x + bounds.width),
                                 map_y(bounds.y + bounds.height),
@@ -62,15 +65,15 @@ impl AmethystIcedPrimitive {
                             .into(),
                             color,
                         },
-                        IcedVertex {
+                        TriangleVertex {
                             position: [map_x(bounds.x), map_y(bounds.y)].into(),
                             color,
                         },
-                        IcedVertex {
+                        TriangleVertex {
                             position: [map_x(bounds.x), map_y(bounds.y + bounds.height)].into(),
                             color,
                         },
-                        IcedVertex {
+                        TriangleVertex {
                             position: [
                                 map_x(bounds.x + bounds.width),
                                 map_y(bounds.y + bounds.height),

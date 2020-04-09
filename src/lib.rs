@@ -1,6 +1,7 @@
 mod backend;
 mod bundle;
 mod pass;
+mod pipelines;
 mod plugin;
 mod primitive;
 pub mod sandbox;
