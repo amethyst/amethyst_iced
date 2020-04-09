@@ -11,14 +11,11 @@ use amethyst::{
 use std::fmt::Debug;
 
 use crate::pass::IcedPassDesc;
-use crate::sandbox::Sandbox;
 
 #[derive(Default, Debug)]
-pub struct IcedUI<S: Sandbox + Debug> {
-    _sandbox: std::marker::PhantomData<S>,
-}
+pub struct IcedUI; 
 
-impl<B: Backend, S: Sandbox + Debug> RenderPlugin<B> for IcedUI<S> {
+impl<B: Backend> RenderPlugin<B> for IcedUI {
     fn on_plan(
         &mut self,
         plan: &mut RenderPlan<B>,
@@ -29,7 +26,7 @@ impl<B: Backend, S: Sandbox + Debug> RenderPlugin<B> for IcedUI<S> {
             // Add our Description
             ctx.add(
                 RenderOrder::Transparent,
-                IcedPassDesc::<S>::default().builder(),
+                IcedPassDesc::default().builder(),
             )?;
             Ok(())
         });

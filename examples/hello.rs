@@ -21,7 +21,7 @@ fn main() -> Result<(), Error> {
         .with_bundle(
             RenderingBundle::<Backend>::new()
                 .with_plugin(RenderToWindow::from_config_path(display_config)?)
-                .with_plugin(IcedUI::<HelloUIState>::default()),
+                .with_plugin(IcedUI::default()),
         )?
         .with_bundle(IcedBundle::new(HelloUIState::default()))?;
 

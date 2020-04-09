@@ -1,6 +1,5 @@
 use crate::pass::IcedPass;
 use crate::vertex::IcedVertex;
-use crate::Sandbox;
 use amethyst::renderer::{rendy::factory::Factory, types::Backend};
 use iced_native::{Color, Rectangle};
 
@@ -12,17 +11,26 @@ pub enum AmethystIcedPrimitive {
     Group(Vec<AmethystIcedPrimitive>),
 }
 
+/// Wrapper struct meant to avoid an user from interfering (accidentally or not) 
+/// into amethyst_iced's primitives 
+pub(crate) struct IcedPrimitives(pub(crate) Option<AmethystIcedPrimitive>);
+
+impl Default for IcedPrimitives {
+    fn default() -> Self {
+        IcedPrimitives(None)
+    }
+}
+
 impl AmethystIcedPrimitive {
     /// Consumes the Primitive, rendering it on the pass
-    pub fn render<B: Backend, S: Sandbox + std::fmt::Debug>(
+    pub fn render<B: Backend>(
         self,
-        pass: &mut IcedPass<B, S>,
+        pass: &mut IcedPass<B>,
         factory: &Factory<B>,
         index: usize,
     ) {
-        let (width, height) = pass.get_fb_size();
-        let map_x = |value: f32| value * 2. / width - 1.;
-        let map_y = |value: f32| value * 2. / height - 1.;
+        let map_x = |value: f32| value * 2. / 800. - 1.;
+        let map_y = |value: f32| value * 2. / 600. - 1.;
         match self {
             AmethystIcedPrimitive::Group(primitives) => primitives
                 .into_iter()
