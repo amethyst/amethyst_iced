@@ -11,12 +11,13 @@ use amethyst::renderer::{
     },
     types::Backend,
 };
+use glsl_layout::AsStd140;
 
 use crate::pipelines::TrianglePipeline;
-use crate::primitive::IcedPrimitives;
+use crate::{vertex::TriangleVertex, primitive::IcedPrimitives};
 
 #[derive(Default, Debug)]
-pub struct IcedPassDesc; 
+pub struct IcedPassDesc;
 
 impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
     fn build(
@@ -31,11 +32,14 @@ impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
         _buffers: Vec<NodeBuffer>,
         _images: Vec<NodeImage>,
     ) -> Result<Box<dyn RenderGroup<B, World>>, failure::Error> {
-        let triangle_pipeline = TrianglePipeline::create_pipeline(factory, subpass, framebuffer_width, framebuffer_height)?; 
+        let triangle_pipeline = TrianglePipeline::create_pipeline(
+            factory,
+            subpass,
+            framebuffer_width,
+            framebuffer_height,
+        )?;
 
-        Ok(Box::new(IcedPass {
-            triangle_pipeline,
-        }))
+        Ok(Box::new(IcedPass { triangle_pipeline }))
     }
 }
 
@@ -54,9 +58,13 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         world: &World,
     ) -> PrepareResult {
         let mut iced_primitives = Write::<'_, IcedPrimitives>::fetch(world);
-        if let Some(iced_primitives ) = iced_primitives.0.take() {
+        self.triangle_pipeline.vertices = vec![];
+        self.triangle_pipeline.uniforms.write(factory, index, self.triangle_pipeline.transform.std140());
+        if let Some(iced_primitives) = iced_primitives.0.take() {
             iced_primitives.render(self, factory, index);
         }
+
+        self.triangle_pipeline.vertex.write(factory, index, self.triangle_pipeline.vertices.len() as u64, Some(self.triangle_pipeline.vertices.clone().into_iter().collect::<Box<[TriangleVertex]>>())); 
         PrepareResult::DrawRecord
     }
 

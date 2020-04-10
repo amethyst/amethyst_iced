@@ -1,7 +1,7 @@
 use amethyst::ecs::{Read, ReadExpect, System, SystemData, World, Write};
 use amethyst::shrev::{EventChannel, ReaderId};
-use amethyst::winit::{Event as WinitEvent, WindowEvent as WinitWindowEvent};
 use amethyst::window::ScreenDimensions;
+use amethyst::winit::{Event as WinitEvent, WindowEvent as WinitWindowEvent};
 use iced_native::{Cache, Size, UserInterface};
 
 use crate::backend::IcedRenderer;
@@ -32,17 +32,26 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         Write<'a, IcedRenderer>,
         ReadExpect<'a, ScreenDimensions>,
         Write<'a, IcedPrimitives>,
-    ); 
+    );
 
-    fn run(&mut self, (winit_events, mut ui_messages, sandbox, mut renderer, screen_dimensions, mut iced_primitives): Self::SystemData) {
+    fn run(
+        &mut self,
+        (
+            winit_events,
+            mut ui_messages,
+            sandbox,
+            mut renderer,
+            screen_dimensions,
+            mut iced_primitives,
+        ): Self::SystemData,
+    ) {
         let reader = self
             .winit_reader_id
             .as_mut()
             .expect("Failed to get ReaderID: IcedUpdateSystem has not been setup.");
         let bounds: Size = [screen_dimensions.width(), screen_dimensions.height()].into();
         let cache = self.cache.take().unwrap();
-        let mut user_interface =
-            UserInterface::build(sandbox.view(), bounds, cache, &mut renderer);
+        let mut user_interface = UserInterface::build(sandbox.view(), bounds, cache, &mut renderer);
         winit_events
             .read(reader)
             .filter_map(|winit_event| match winit_event {

@@ -7,7 +7,10 @@ use amethyst::{
 
 use crate::backend::IcedRenderer;
 use crate::sandbox::{Sandbox, SandboxContainer};
-use crate::{primitive::IcedPrimitives, systems::{IcedInteropSystem, IcedDrawSystem}};
+use crate::{
+    primitive::IcedPrimitives,
+    systems::{IcedDrawSystem, IcedInteropSystem},
+};
 
 pub struct IcedBundle<S: Sandbox> {
     sandbox: S,
@@ -35,7 +38,11 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
 
         // Adds Iced-related systems
         dispatcher.add(IcedInteropSystem::<S>::default(), "iced_interop", &[]);
-        dispatcher.add(IcedDrawSystem::<S>::default(), "iced_draw", &["iced_interop"]);
+        dispatcher.add(
+            IcedDrawSystem::<S>::default(),
+            "iced_draw",
+            &["iced_interop"],
+        );
 
         Ok(())
     }
