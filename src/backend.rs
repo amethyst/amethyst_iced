@@ -1,11 +1,23 @@
+use amethyst::assets::{Handle, AssetStorage};
+use amethyst::renderer::SpriteSheet;
+use amethyst::ecs::Read;
 use iced_native::renderer::Renderer;
 
 use crate::primitive::AmethystIcedPrimitive;
 
-#[derive(Debug, Default)]
-pub struct IcedRenderer;
+pub struct IcedRenderer<'a> {
+    textures: Read<'a, AssetStorage<SpriteSheet>>,
+}
 
-impl Renderer for IcedRenderer {
+impl<'a> IcedRenderer<'a> {
+    pub fn new(textures: Read<'a, AssetStorage<SpriteSheet>>) -> Self {
+        IcedRenderer {
+            textures,
+        }
+    }
+}
+
+impl<'a> Renderer for IcedRenderer<'a> {
     type Output = AmethystIcedPrimitive;
     type Defaults = ();
 }

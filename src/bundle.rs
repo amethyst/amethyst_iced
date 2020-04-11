@@ -38,7 +38,6 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
         // Creates communication channels for the Sandbox
         world.insert(EventChannel::<S::UIMessage>::default());
         world.insert(EventChannel::<S::GameMessage>::default());
-        world.insert(IcedRenderer::default());
         world.insert(IcedPrimitives::default());
 
         // Adds Iced-related systems

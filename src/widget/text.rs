@@ -2,7 +2,7 @@ use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
 use iced_native::widget::text::Renderer as TextRenderer;
 use iced_native::{Color, Font, HorizontalAlignment, Rectangle, Size, VerticalAlignment};
 
-impl TextRenderer for IcedRenderer {
+impl<'a> TextRenderer for IcedRenderer<'a> {
     const DEFAULT_SIZE: u16 = 16;
 
     fn measure(&self, _content: &str, _size: u16, _font: Font, _bounds: Size) -> (f32, f32) {

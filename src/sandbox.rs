@@ -1,6 +1,6 @@
 use crate::backend::IcedRenderer;
 
-pub type Element<'a, Message> = iced_native::Element<'a, Message, IcedRenderer>;
+pub type Element<'a, 'r, Message> = iced_native::Element<'a, Message, IcedRenderer<'r>>;
 
 /// The Sandbox is a basic UI wrapper.
 ///

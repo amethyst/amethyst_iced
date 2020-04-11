@@ -9,7 +9,7 @@ amethyst = "0.15"
 failure = "0.1"
 glam = "0.8.6"
 glsl-layout = "0.3"
-iced_native = "0.2"
+iced_native = { path = "../iced/native" } 
 iced_winit = "0.1.0"
 lazy_static = "1.4.0"
 log = "0.4.8"

@@ -1,4 +1,6 @@
+use amethyst::assets::AssetStorage;
 use amethyst::ecs::{Read, ReadExpect, System, SystemData, World, Write};
+use amethyst::renderer::SpriteSheet;
 use amethyst::shrev::{EventChannel, ReaderId};
 use amethyst::window::ScreenDimensions;
 use amethyst::winit::{Event as WinitEvent, WindowEvent as WinitWindowEvent};
@@ -29,7 +31,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         Read<'a, EventChannel<WinitEvent>>,
         Write<'a, EventChannel<<S as Sandbox>::UIMessage>>,
         Option<Read<'a, SandboxContainer<S>>>,
-        Write<'a, IcedRenderer>,
+        Read<'a, AssetStorage<SpriteSheet>>,
         ReadExpect<'a, ScreenDimensions>,
         Write<'a, IcedPrimitives>,
     );
@@ -40,7 +42,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
             winit_events,
             mut ui_messages,
             sandbox,
-            mut renderer,
+            sprite_sheet,
             screen_dimensions,
             mut iced_primitives,
         ): Self::SystemData,
@@ -50,6 +52,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
             return;
         }
         let sandbox = sandbox.unwrap();
+        let mut renderer = IcedRenderer::new(sprite_sheet);
 
         let reader = self
             .winit_reader_id

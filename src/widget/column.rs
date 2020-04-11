@@ -1,7 +1,7 @@
 use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
 use iced_native::{column::Renderer as ColumnRenderer, Element, Layout, Point};
 
-impl ColumnRenderer for IcedRenderer {
+impl<'a> ColumnRenderer for IcedRenderer<'a> {
     fn draw<Message>(
         &mut self,
         defaults: &Self::Defaults,

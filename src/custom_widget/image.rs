@@ -52,7 +52,7 @@ impl Image {
     }
 }
 
-impl<Message> Widget<Message, IcedRenderer> for Image {
+impl<'a, Message> Widget<Message, IcedRenderer<'a>> for Image {
     fn width(&self) -> Length {
         self.width.clone()
     }
@@ -99,8 +99,8 @@ impl<Message> Widget<Message, IcedRenderer> for Image {
     }
 }
 
-impl<'a, Message> From<Image> for Element<'a, Message, IcedRenderer> {
-    fn from(image: Image) -> Element<'a, Message, IcedRenderer> {
+impl<'a, 'r, Message> From<Image> for Element<'a, Message, IcedRenderer<'r>> {
+    fn from(image: Image) -> Element<'a, Message, IcedRenderer<'r>> {
         Element::new(image)
     }
 }

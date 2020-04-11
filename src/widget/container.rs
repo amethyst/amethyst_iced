@@ -2,7 +2,7 @@ use crate::backend::IcedRenderer;
 use iced_native::widget::container::Renderer;
 use iced_native::{Element, Point, Rectangle};
 
-impl Renderer for IcedRenderer {
+impl<'a> Renderer for IcedRenderer<'a> {
     type Style = ();
 
     fn draw<Message>(
