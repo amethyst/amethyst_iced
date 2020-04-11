@@ -22,10 +22,14 @@ impl<'a, S: Sandbox> System<'a> for IcedInteropSystem<S> {
     type SystemData = (
         Read<'a, EventChannel<S::UIMessage>>,
         Write<'a, EventChannel<S::GameMessage>>,
-        Write<'a, SandboxContainer<S>>,
+        Option<Write<'a, SandboxContainer<S>>>,
     );
 
-    fn run(&mut self, (ui_messages, mut game_messages, mut sandbox): Self::SystemData) {
+    fn run(&mut self, (ui_messages, mut game_messages, sandbox): Self::SystemData) {
+        if sandbox.is_none() {
+            return;
+        }
+        let mut sandbox = sandbox.unwrap();
         let reader = self
             .ui_event_reader
             .as_mut()

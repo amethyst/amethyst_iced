@@ -13,13 +13,19 @@ use crate::{
 };
 
 pub struct IcedBundle<S: Sandbox> {
-    sandbox: S,
+    _sandbox: std::marker::PhantomData<S>,
+}
+
+impl<S: Sandbox> Default for IcedBundle<S> {
+    fn default() -> Self {
+        IcedBundle::new()
+    }
 }
 
 impl<S: Sandbox> IcedBundle<S> {
     /// Creates a new IcedBundle containing a Sandboxed application
-    pub fn new(sandbox: S) -> Self {
-        IcedBundle { sandbox }
+    pub fn new() -> Self {
+        IcedBundle { _sandbox: std::marker::PhantomData }
     }
 }
 
@@ -32,7 +38,6 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
         // Creates communication channels for the Sandbox
         world.insert(EventChannel::<S::UIMessage>::default());
         world.insert(EventChannel::<S::GameMessage>::default());
-        world.insert(SandboxContainer::new(self.sandbox));
         world.insert(IcedRenderer::default());
         world.insert(IcedPrimitives::default());
 

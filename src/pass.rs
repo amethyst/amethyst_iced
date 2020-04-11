@@ -13,7 +13,7 @@ use amethyst::renderer::{
 };
 use glsl_layout::AsStd140;
 
-use crate::pipelines::TrianglePipeline;
+use crate::pipelines::{ImagePipeline, TrianglePipeline};
 use crate::{vertex::TriangleVertex, primitive::IcedPrimitives};
 
 #[derive(Default, Debug)]
@@ -39,13 +39,21 @@ impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
             framebuffer_height,
         )?;
 
-        Ok(Box::new(IcedPass { triangle_pipeline }))
+        let image_pipeline = ImagePipeline::create_pipeline(
+            factory,
+            subpass, 
+            framebuffer_width,
+            framebuffer_height
+        )?;
+
+        Ok(Box::new(IcedPass { triangle_pipeline, image_pipeline }))
     }
 }
 
 #[derive(Debug)]
 pub struct IcedPass<B: Backend> {
     pub triangle_pipeline: TrianglePipeline<B>,
+    pub image_pipeline: ImagePipeline<B>,
 }
 
 impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
@@ -60,10 +68,13 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         let mut iced_primitives = Write::<'_, IcedPrimitives>::fetch(world);
         self.triangle_pipeline.vertices = vec![];
         self.triangle_pipeline.uniforms.write(factory, index, self.triangle_pipeline.transform.std140());
+        self.image_pipeline.batches.swap_clear();
+        self.image_pipeline.uniforms.write(factory, index, self.image_pipeline.transform.std140());
         if let Some(iced_primitives) = iced_primitives.0.take() {
-            iced_primitives.render(self, factory, index);
+            iced_primitives.render(self, factory, index, world);
         }
 
+        self.image_pipeline.vertex.write(factory, index, 6, Some(self.image_pipeline.batches.data()));
         self.triangle_pipeline.vertex.write(factory, index, self.triangle_pipeline.vertices.len() as u64, Some(self.triangle_pipeline.vertices.clone().into_iter().collect::<Box<[TriangleVertex]>>())); 
         PrepareResult::DrawRecord
     }
@@ -76,9 +87,11 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         _aux: &World,
     ) {
         self.triangle_pipeline.draw(&mut encoder, index);
+        self.image_pipeline.draw(&mut encoder, index);
     }
 
     fn dispose(self: Box<Self>, factory: &mut Factory<B>, _aux: &World) {
         self.triangle_pipeline.dispose(factory);
+        self.image_pipeline.dispose(factory);
     }
 }

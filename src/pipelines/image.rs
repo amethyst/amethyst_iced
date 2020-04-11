@@ -8,40 +8,43 @@ use amethyst::renderer::{
         mesh::AsVertex,
         shader::{Shader, SpirvShader},
     },
-    submodules::{DynamicUniform, DynamicVertexBuffer},
+    submodules::{DynamicUniform, DynamicVertexBuffer, TextureId, TextureSub},
+    batch::OrderedOneLevelBatch,
     types::Backend,
     util::simple_shader_set,
 };
 use glsl_layout::{mat4, AsStd140};
 use glam::{Mat4, Vec3};
 
-use crate::vertex::TriangleVertex;
+use crate::vertex::image::ImageVertex;
 
 lazy_static::lazy_static! {
-     static ref TRIANGLE_VERTEX: SpirvShader = SpirvShader::from_bytes(
-        include_bytes!("../../shaders/compiled/triangle.vert.spv"),
+     static ref IMAGE_VERTEX: SpirvShader = SpirvShader::from_bytes(
+        include_bytes!("../../shaders/compiled/image.vert.spv"),
         ShaderStageFlags::VERTEX,
         "main",
     ).unwrap();
 
-    static ref TRIANGLE_FRAGMENT: SpirvShader = SpirvShader::from_bytes(
-        include_bytes!("../../shaders/compiled/triangle.frag.spv"),
+    static ref IMAGE_FRAGMENT: SpirvShader = SpirvShader::from_bytes(
+        include_bytes!("../../shaders/compiled/image.frag.spv"),
         ShaderStageFlags::FRAGMENT,
         "main",
     ).unwrap();
 }
 
+
 #[derive(Debug)]
-pub struct TrianglePipeline<B: Backend> {
+pub struct ImagePipeline<B: Backend> {
     pipeline: B::GraphicsPipeline,
     pipeline_layout: B::PipelineLayout,
-    pub vertex: DynamicVertexBuffer<B, TriangleVertex>,
-    pub uniforms: DynamicUniform<B, TriangleUniform>,
-    pub vertices: Vec<TriangleVertex>,
-    pub transform: TriangleUniform,
+    pub textures: TextureSub<B>,
+    pub vertex: DynamicVertexBuffer<B, ImageVertex>,
+    pub batches: OrderedOneLevelBatch<TextureId, ImageVertex>,
+    pub uniforms: DynamicUniform<B, ImageUniform>,
+    pub transform: ImageUniform,
 }
 
-impl<B: Backend> TrianglePipeline<B> {
+impl<B: Backend> ImagePipeline<B> {
     pub fn create_pipeline(
         factory: &Factory<B>,
         subpass: hal::pass::Subpass<'_, B>,
@@ -49,23 +52,25 @@ impl<B: Backend> TrianglePipeline<B> {
         fb_height: u32,
     ) -> Result<Self, failure::Error> {
         let uniforms =
-            DynamicUniform::<B, TriangleUniform>::new(factory, pso::ShaderStageFlags::VERTEX)?;
-        let layouts = vec![uniforms.raw_layout()];
+        DynamicUniform::<B, ImageUniform>::new(factory, pso::ShaderStageFlags::VERTEX)?;
+        let textures = TextureSub::new(factory)?;
+        let layouts = vec![uniforms.raw_layout(), textures.raw_layout()];
         let pipeline_layout = unsafe {
             factory
-                .device()
-                .create_pipeline_layout(layouts, None as Option<(_, _)>)
+            .device()
+            .create_pipeline_layout(layouts, None as Option<(_, _)>)
         }?;
-
-        let vertex = DynamicVertexBuffer::<B, TriangleVertex>::new();
-
+            
+        let vertex = DynamicVertexBuffer::<B, ImageVertex>::new();
+        let batches = OrderedOneLevelBatch::<TextureId, ImageVertex>::default();
+        
         let shader_vertex = unsafe {
-            TRIANGLE_VERTEX
+            IMAGE_VERTEX
                 .module(factory)
                 .expect("Failed to create triangle_vertex module")
         };
         let shader_fragment = unsafe {
-            TRIANGLE_FRAGMENT
+            IMAGE_FRAGMENT
                 .module(factory)
                 .expect("Failed to create triangle_fragment module")
         };
@@ -73,7 +78,7 @@ impl<B: Backend> TrianglePipeline<B> {
         let pipes = PipelinesBuilder::new()
             .with_pipeline(
                 PipelineDescBuilder::new()
-                    .with_vertex_desc(&[(TriangleVertex::vertex(), pso::VertexInputRate::Vertex)])
+                    .with_vertex_desc(&[(ImageVertex::vertex(), pso::VertexInputRate::Vertex)])
                     .with_input_assembler(pso::InputAssemblerDesc::new(
                         hal::Primitive::TriangleList,
                     ))
@@ -93,11 +98,12 @@ impl<B: Backend> TrianglePipeline<B> {
             factory.destroy_shader_module(shader_fragment);
         }
 
+
         let fb_width = fb_width as f32;
         let fb_height = fb_height as f32;
         let u_transform = Mat4::orthographic_lh(-fb_width/2., fb_width/2., -fb_height/2., fb_height/2., 0.1, 2000.) * Mat4::from_translation(Vec3::new(0. -fb_width/2., -fb_height/2., 0.));
         let u_transform: mat4 = u_transform.to_cols_array_2d().into();
-        let transform = TriangleUniform { u_transform };
+        let transform = ImageUniform { u_transform };
 
         match pipes {
             Err(e) => {
@@ -106,18 +112,20 @@ impl<B: Backend> TrianglePipeline<B> {
                 }
                 Err(e)
             }
-            Ok(mut pipeline) => {
+             Ok(mut pipeline) => {
                 let pipeline = pipeline.remove(0);
-                Ok(TrianglePipeline {
+                Ok(ImagePipeline {
                     pipeline,
                     pipeline_layout,
+                    textures,
                     uniforms,
                     vertex,
-                    vertices: vec![],
+                    batches,
                     transform,
                 })
             }
         }
+
     }
 
     pub fn dispose(self, factory: &mut Factory<B>) {
@@ -130,21 +138,24 @@ impl<B: Backend> TrianglePipeline<B> {
     }
 
     pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize) {
-        if self.vertices.len() == 0 {
+        if self.batches.count() == 0 {
             return;
         }
 
         encoder.bind_graphics_pipeline(&self.pipeline);
         self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
         self.vertex.bind(index, 0, 0, encoder);
-        unsafe {
-            encoder.draw(0..self.vertices.len() as u32, 0..1);
-        }
+        self.batches.iter().for_each(|(&tex, range)| {
+            self.textures.bind(&self.pipeline_layout, 1, tex, encoder);
+            unsafe {
+                encoder.draw(0..6, range);
+            }
+        });
     }
 }
 
 #[derive(Clone, Debug, AsStd140)]
 #[repr(C, align(4))]
-pub struct TriangleUniform {
+pub struct ImageUniform {
     u_transform: mat4,
 }

@@ -11,9 +11,9 @@ pub type Element<'a, Message> = iced_native::Element<'a, Message, IcedRenderer>;
 /// that their systems will listen to and react accordingly, allowing ECS interaction with the UI.
 //
 // Note: UIMessage & GameMessage have to be different types, otherwise the application will crash.
-pub trait Sandbox: Default + Send + Sync + 'static {
-    type UIMessage: std::fmt::Debug + Send + Sync + 'static;
-    type GameMessage: std::fmt::Debug + Send + Sync + 'static;
+pub trait Sandbox: Send + Sync + 'static {
+    type UIMessage: Send + Sync + 'static;
+    type GameMessage: Send + Sync + 'static;
 
     fn update(&mut self, _message: &Self::UIMessage) -> Vec<Self::GameMessage> {
         vec![]

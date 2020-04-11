@@ -28,7 +28,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
     type SystemData = (
         Read<'a, EventChannel<WinitEvent>>,
         Write<'a, EventChannel<<S as Sandbox>::UIMessage>>,
-        Read<'a, SandboxContainer<S>>,
+        Option<Read<'a, SandboxContainer<S>>>,
         Write<'a, IcedRenderer>,
         ReadExpect<'a, ScreenDimensions>,
         Write<'a, IcedPrimitives>,
@@ -45,6 +45,12 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
             mut iced_primitives,
         ): Self::SystemData,
     ) {
+        if sandbox.is_none() {
+            log::warn!("No sandbox was found in resources, Iced UI will not be drawn.");
+            return;
+        }
+        let sandbox = sandbox.unwrap();
+
         let reader = self
             .winit_reader_id
             .as_mut()
