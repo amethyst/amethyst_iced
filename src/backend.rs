@@ -1,18 +1,23 @@
-use amethyst::assets::{Handle, AssetStorage};
+use amethyst::assets::AssetStorage;
 use amethyst::renderer::SpriteSheet;
-use amethyst::ecs::Read;
+use amethyst::ecs::{WriteExpect, Read};
 use iced_native::renderer::Renderer;
 
 use crate::primitive::AmethystIcedPrimitive;
+use crate::IcedGlyphBrush;
+
+use std::cell::RefCell;
 
 pub struct IcedRenderer<'a> {
-    textures: Read<'a, AssetStorage<SpriteSheet>>,
+    pub textures: Read<'a, AssetStorage<SpriteSheet>>,
+    pub glyph_brush: RefCell<WriteExpect<'a, IcedGlyphBrush>>, 
 }
 
 impl<'a> IcedRenderer<'a> {
-    pub fn new(textures: Read<'a, AssetStorage<SpriteSheet>>) -> Self {
+    pub fn new(textures: Read<'a, AssetStorage<SpriteSheet>>, glyph_brush: WriteExpect<'a, IcedGlyphBrush>) -> Self {
         IcedRenderer {
             textures,
+            glyph_brush: RefCell::new(glyph_brush), 
         }
     }
 }

@@ -51,7 +51,7 @@ impl Sandbox for HelloUIState {
     fn view(&self) -> Element<Self::UIMessage> {
         let col = Column::new()
             .spacing(5)
-            .push(Text::new("Test red").color(Color::from_rgb(1., 0., 0.)))
+            .push(Text::new("Test red").size(40).color(Color::from_rgb(1., 0., 0.)))
             .push(Text::new("Test green").color(Color::from_rgb(0., 1., 0.)))
             .push(Text::new("Test blue").color(Color::from_rgb(0., 0., 1.)))
             .push(Text::new("Test yellow").color(Color::from_rgb(1., 1., 0.)));

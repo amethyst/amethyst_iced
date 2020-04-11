@@ -1,14 +1,16 @@
 use amethyst::assets::AssetStorage;
-use amethyst::ecs::{Read, ReadExpect, System, SystemData, World, Write};
+use amethyst::ecs::{Read, ReadExpect, System, SystemData, World, Write, WriteExpect};
 use amethyst::renderer::SpriteSheet;
 use amethyst::shrev::{EventChannel, ReaderId};
 use amethyst::window::ScreenDimensions;
 use amethyst::winit::{Event as WinitEvent, WindowEvent as WinitWindowEvent};
 use iced_native::{Cache, Size, UserInterface};
+use glyph_brush::GlyphBrush;
 
 use crate::backend::IcedRenderer;
 use crate::primitive::IcedPrimitives;
 use crate::sandbox::{Sandbox, SandboxContainer};
+use crate::vertex::TextVertex;
 
 pub(crate) struct IcedDrawSystem<S: Sandbox> {
     _sandbox: std::marker::PhantomData<S>,
@@ -32,6 +34,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         Write<'a, EventChannel<<S as Sandbox>::UIMessage>>,
         Option<Read<'a, SandboxContainer<S>>>,
         Read<'a, AssetStorage<SpriteSheet>>,
+        WriteExpect<'a, GlyphBrush<'static, (u32, TextVertex)>>,
         ReadExpect<'a, ScreenDimensions>,
         Write<'a, IcedPrimitives>,
     );
@@ -43,6 +46,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
             mut ui_messages,
             sandbox,
             sprite_sheet,
+            glyph_brush,
             screen_dimensions,
             mut iced_primitives,
         ): Self::SystemData,
@@ -52,7 +56,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
             return;
         }
         let sandbox = sandbox.unwrap();
-        let mut renderer = IcedRenderer::new(sprite_sheet);
+        let mut renderer = IcedRenderer::new(sprite_sheet, glyph_brush);
 
         let reader = self
             .winit_reader_id

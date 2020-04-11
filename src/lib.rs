@@ -18,3 +18,5 @@ pub use custom_widget::*;
 
 // Conveniently re-exports iced's Widget types
 pub use iced_native::{Align, Color, Column, Container, Length, Text};
+
+pub type IcedGlyphBrush = glyph_brush::GlyphBrush<'static, (u32, crate::vertex::TextVertex)>;

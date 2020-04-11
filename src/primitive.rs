@@ -4,13 +4,13 @@ use crate::custom_widget::ImageHandle;
 use amethyst::renderer::{rendy::factory::Factory, rendy::hal::self, types::Backend};
 use amethyst::ecs::World;
 use glsl_layout::vec4;
-use iced_native::{Color, Rectangle};
+use iced_native::{Color, Rectangle, HorizontalAlignment, VerticalAlignment};
 
 #[allow(dead_code)]
 pub enum AmethystIcedPrimitive {
     Quad(Rectangle, Option<Color>),
     Image(Rectangle, ImageHandle),
-    Text,
+    Text { bounds: Rectangle, content: String, size: u16, color: [f32;4], horizontal_alignment: HorizontalAlignment, vertical_alignment: VerticalAlignment },
     Group(Vec<AmethystIcedPrimitive>),
 }
 
@@ -101,7 +101,7 @@ impl AmethystIcedPrimitive {
                     }
                 } 
             }
-            _ => unimplemented!(),
+            AmethystIcedPrimitive::Text { .. } => {},
         }
     }
 }

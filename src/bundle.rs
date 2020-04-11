@@ -4,12 +4,13 @@ use amethyst::{
     shrev::EventChannel,
     Error,
 };
+use glyph_brush::GlyphBrushBuilder;
 
-use crate::backend::IcedRenderer;
-use crate::sandbox::{Sandbox, SandboxContainer};
 use crate::{
+    sandbox::Sandbox,
     primitive::IcedPrimitives,
     systems::{IcedDrawSystem, IcedInteropSystem},
+    IcedGlyphBrush
 };
 
 pub struct IcedBundle<S: Sandbox> {
@@ -39,6 +40,8 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
         world.insert(EventChannel::<S::UIMessage>::default());
         world.insert(EventChannel::<S::GameMessage>::default());
         world.insert(IcedPrimitives::default());
+        let square_ttf: &[u8] = include_bytes!("../font/square.ttf");
+        world.insert::<IcedGlyphBrush>(GlyphBrushBuilder::using_font_bytes(square_ttf).build());
 
         // Adds Iced-related systems
         dispatcher.add(IcedInteropSystem::<S>::default(), "iced_interop", &[]);

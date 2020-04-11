@@ -13,6 +13,7 @@ iced_native = { path = "../iced/native" }
 iced_winit = "0.1.0"
 lazy_static = "1.4.0"
 log = "0.4.8"
+glyph_brush = "0.6.0"
 
 [features]
 default = ["amethyst/empty"]
