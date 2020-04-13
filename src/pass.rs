@@ -1,4 +1,4 @@
-use amethyst::ecs::{SystemData, World, Write};
+use amethyst::ecs::{Read, SystemData, World, Write};
 use amethyst::renderer::{
     rendy::{
         command::{QueueId, RenderPassEncoder},
@@ -13,8 +13,10 @@ use amethyst::renderer::{
 };
 use glsl_layout::AsStd140;
 
-use crate::pipelines::{ImagePipeline, TrianglePipeline};
-use crate::{vertex::TriangleVertex, primitive::IcedPrimitives};
+use crate::systems::TextVertexContainer;
+use crate::pipelines::{ImagePipeline, TextPipeline, TrianglePipeline};
+use crate::{primitive::IcedPrimitives, vertex::TriangleVertex};
+use crate::vertex::TextVertex;
 
 #[derive(Default, Debug)]
 pub struct IcedPassDesc;
@@ -41,12 +43,19 @@ impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
 
         let image_pipeline = ImagePipeline::create_pipeline(
             factory,
-            subpass, 
+            subpass,
             framebuffer_width,
-            framebuffer_height
+            framebuffer_height,
         )?;
 
-        Ok(Box::new(IcedPass { triangle_pipeline, image_pipeline }))
+        let text_pipeline =
+            TextPipeline::create_pipeline(factory, subpass, framebuffer_width, framebuffer_height)?;
+
+        Ok(Box::new(IcedPass {
+            triangle_pipeline,
+            image_pipeline,
+            text_pipeline,
+        }))
     }
 }
 
@@ -54,6 +63,7 @@ impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
 pub struct IcedPass<B: Backend> {
     pub triangle_pipeline: TrianglePipeline<B>,
     pub image_pipeline: ImagePipeline<B>,
+    pub text_pipeline: TextPipeline<B>,
 }
 
 impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
@@ -66,16 +76,84 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         world: &World,
     ) -> PrepareResult {
         let mut iced_primitives = Write::<'_, IcedPrimitives>::fetch(world);
+
         self.triangle_pipeline.vertices = vec![];
-        self.triangle_pipeline.uniforms.write(factory, index, self.triangle_pipeline.transform.std140());
+        self.triangle_pipeline.uniforms.write(
+            factory,
+            index,
+            self.triangle_pipeline.transform.std140(),
+        );
+
         self.image_pipeline.batches.swap_clear();
-        self.image_pipeline.uniforms.write(factory, index, self.image_pipeline.transform.std140());
+        self.image_pipeline
+            .uniforms
+            .write(factory, index, self.image_pipeline.transform.std140());
+
+        self.text_pipeline
+            .uniforms
+            .write(factory, index, self.text_pipeline.transform.std140());
+        self.text_pipeline.bind_texture_id(factory, world);
+
         if let Some(iced_primitives) = iced_primitives.0.take() {
             iced_primitives.render(self, factory, index, world);
         }
 
-        self.image_pipeline.vertex.write(factory, index, 6, Some(self.image_pipeline.batches.data()));
-        self.triangle_pipeline.vertex.write(factory, index, self.triangle_pipeline.vertices.len() as u64, Some(self.triangle_pipeline.vertices.clone().into_iter().collect::<Box<[TriangleVertex]>>())); 
+        self.triangle_pipeline.vertex.write(
+            factory,
+            index,
+            self.triangle_pipeline.vertices.len() as u64,
+            Some(
+                self.triangle_pipeline
+                    .vertices
+                    .clone()
+                    .into_iter()
+                    .collect::<Box<[TriangleVertex]>>(),
+            ),
+        );
+        self.image_pipeline.vertex.write(
+            factory,
+            index,
+            self.image_pipeline.batches.count() as u64,
+            Some(self.image_pipeline.batches.data()),
+        );
+
+        let text_vertex_container = Read::<'_, TextVertexContainer>::fetch(world);
+        self.text_pipeline.vertex.write(
+            factory,
+            index,
+            text_vertex_container.0.len() as u64,
+            Some(&(text_vertex_container.0)),
+        );
+
+        /*
+        let verts: Vec<TextVertex> = vec![
+            TextVertex {
+                position: [-1.,-1.].into(),
+                uv: [0.,0.].into(),
+            },
+            TextVertex {
+                position: [-1.,1.].into(),
+                uv: [0.,1.].into(),
+            },
+            TextVertex {
+                position: [1.,1.].into(),
+                uv: [1.,1.].into(),
+            },
+            TextVertex {
+                position: [-1.,-1.].into(),
+                uv: [0.,0.].into(),
+            },
+            TextVertex {
+                position: [1.,-1.].into(),
+                uv: [1.,0.].into(),
+            },
+            TextVertex {
+                position: [1.,1.].into(),
+                uv: [1.,1.].into(),
+            },
+        ];
+        self.text_pipeline.vertex.write(factory, index, 6, Some(verts.into_iter().collect::<Box<[TextVertex]>>()));
+        */
         PrepareResult::DrawRecord
     }
 
@@ -84,10 +162,11 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         mut encoder: RenderPassEncoder<'_, B>,
         index: usize,
         _subpass: hal::pass::Subpass<'_, B>,
-        _aux: &World,
+        aux: &World,
     ) {
         self.triangle_pipeline.draw(&mut encoder, index);
         self.image_pipeline.draw(&mut encoder, index);
+        self.text_pipeline.draw(&mut encoder, index, aux);
     }
 
     fn dispose(self: Box<Self>, factory: &mut Factory<B>, _aux: &World) {

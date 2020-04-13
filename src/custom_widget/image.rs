@@ -2,10 +2,10 @@ use iced_native::Hasher;
 use std::hash::Hash;
 
 use amethyst::assets::Handle;
-use amethyst::renderer::{Texture};
-use iced_native::{Element, Length, Widget, Layout, layout, Renderer, Point, Size};
+use amethyst::renderer::Texture;
+use iced_native::{layout, Element, Layout, Length, Point, Renderer, Size, Widget};
 
-use crate::{primitive::AmethystIcedPrimitive, backend::IcedRenderer};
+use crate::{backend::IcedRenderer, primitive::AmethystIcedPrimitive};
 
 pub struct Image {
     handle: ImageHandle,
@@ -15,20 +15,28 @@ pub struct Image {
 
 #[derive(Hash, Clone)]
 pub enum ImageHandle {
-    Texture { handle: Handle<Texture>, width: u32, height: u32 },
+    Texture {
+        handle: Handle<Texture>,
+        width: u32,
+        height: u32,
+    },
 }
 
 impl From<(Handle<Texture>, u32, u32)> for ImageHandle {
     fn from((handle, width, height): (Handle<Texture>, u32, u32)) -> Self {
-        ImageHandle::Texture{ handle, width, height }
+        ImageHandle::Texture {
+            handle,
+            width,
+            height,
+        }
     }
 }
 
 impl ImageHandle {
-    pub fn dimensions(&self) -> (u32,u32) {
-       match self {
-            ImageHandle::Texture { width, height, .. } => (*width, *height), 
-       } 
+    pub fn dimensions(&self) -> (u32, u32) {
+        match self {
+            ImageHandle::Texture { width, height, .. } => (*width, *height),
+        }
     }
 }
 
@@ -61,11 +69,7 @@ impl<'a, Message> Widget<Message, IcedRenderer<'a>> for Image {
         self.height.clone()
     }
 
-    fn layout(
-        &self,
-        _renderer: &IcedRenderer, 
-        limits: &layout::Limits,
-    ) -> layout::Node {
+    fn layout(&self, _renderer: &IcedRenderer, limits: &layout::Limits) -> layout::Node {
         let (width, height) = self.handle.dimensions();
         let aspect_ratio = width as f32 / height as f32;
         let mut size = limits
@@ -82,14 +86,17 @@ impl<'a, Message> Widget<Message, IcedRenderer<'a>> for Image {
         layout::Node::new(size)
     }
 
-    fn draw(&self, _renderer: &mut IcedRenderer, _defaults: &<IcedRenderer as Renderer>::Defaults, layout: Layout<'_>, _cursor_position: Point) -> <IcedRenderer as Renderer>::Output {
+    fn draw(
+        &self,
+        _renderer: &mut IcedRenderer,
+        _defaults: &<IcedRenderer as Renderer>::Defaults,
+        layout: Layout<'_>,
+        _cursor_position: Point,
+    ) -> <IcedRenderer as Renderer>::Output {
         let bounds = layout.bounds();
-        AmethystIcedPrimitive::Image(
-            bounds, 
-            self.handle.clone(),
-        )
+        AmethystIcedPrimitive::Image(bounds, self.handle.clone())
     }
-    
+
     fn hash_layout(&self, state: &mut Hasher) {
         std::any::TypeId::of::<Image>().hash(state);
 

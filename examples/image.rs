@@ -1,19 +1,22 @@
 use amethyst::{
-    prelude::*,
+    assets::Handle,
     assets::{AssetStorage, Loader},
+    prelude::*,
     renderer::{
         plugins::RenderToWindow,
         //types::DefaultBackend,
         rendy::util::vulkan::Backend,
+        ImageFormat,
         RenderingBundle,
         Texture,
-        ImageFormat,
     },
     utils::application_root_dir,
     Error,
-    assets::Handle,
 };
-use amethyst_iced::{Align, Color, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text, Image};
+use amethyst_iced::{
+    Align, Color, Column, Container, Element, IcedBundle, IcedUI, Image, Length, Sandbox,
+    SandboxContainer, Text,
+};
 
 fn main() -> Result<(), Error> {
     amethyst::start_logger(Default::default());
@@ -46,23 +49,20 @@ impl SimpleState for ImageState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let StateData { mut world, .. } = data;
 
-    let image = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load(
-            "texture/test.png",
-            ImageFormat::default(),
-            (),
-            &texture_storage,
-        )
-    };
+        let image = {
+            let loader = world.read_resource::<Loader>();
+            let texture_storage = world.read_resource::<AssetStorage<Texture>>();
+            loader.load(
+                "texture/test.png",
+                ImageFormat::default(),
+                (),
+                &texture_storage,
+            )
+        };
 
-        world.insert(SandboxContainer::new(ImageUIState {
-            image, 
-        }))
+        world.insert(SandboxContainer::new(ImageUIState { image }))
     }
 }
-
 
 impl Sandbox for ImageUIState {
     type UIMessage = u32;
@@ -72,7 +72,8 @@ impl Sandbox for ImageUIState {
         let col = Column::new()
             .spacing(5)
             .align_items(Align::Center)
-            .push(Text::new("Test red").color(Color::from_rgb(1., 0., 0.)))
+            .push(Text::new("Hello world in red").color(Color::from_rgb(1., 0., 0.)))
+            .push(Image::new((self.image.clone(), 64, 64)))
             .push(Image::new((self.image.clone(), 64, 64)));
 
         Container::new(col)

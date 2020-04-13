@@ -9,7 +9,9 @@ use amethyst::{
     utils::application_root_dir,
     Error,
 };
-use amethyst_iced::{Color, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text};
+use amethyst_iced::{
+    Color, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text,
+};
 
 fn main() -> Result<(), Error> {
     amethyst::start_logger(Default::default());
@@ -51,7 +53,15 @@ impl Sandbox for HelloUIState {
     fn view(&self) -> Element<Self::UIMessage> {
         let col = Column::new()
             .spacing(5)
-            .push(Text::new("Test red").size(40).color(Color::from_rgb(1., 0., 0.)))
+            .push(
+                Text::new("Test red")
+                    .size(40)
+                    .color(Color::from_rgb(1., 0., 0.)),
+            )
+            .push(
+                Text::new("Test white")
+                    .color(Color::from_rgb(1., 1., 1.)),
+            )
             .push(Text::new("Test green").color(Color::from_rgb(0., 1., 0.)))
             .push(Text::new("Test blue").color(Color::from_rgb(0., 0., 1.)))
             .push(Text::new("Test yellow").color(Color::from_rgb(1., 1., 0.)));

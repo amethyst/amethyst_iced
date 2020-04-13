@@ -7,10 +7,10 @@ use amethyst::{
 use glyph_brush::GlyphBrushBuilder;
 
 use crate::{
-    sandbox::Sandbox,
     primitive::IcedPrimitives,
+    sandbox::Sandbox,
     systems::{IcedDrawSystem, IcedInteropSystem},
-    IcedGlyphBrush
+    IcedGlyphBrush,
 };
 
 pub struct IcedBundle<S: Sandbox> {
@@ -26,7 +26,9 @@ impl<S: Sandbox> Default for IcedBundle<S> {
 impl<S: Sandbox> IcedBundle<S> {
     /// Creates a new IcedBundle containing a Sandboxed application
     pub fn new() -> Self {
-        IcedBundle { _sandbox: std::marker::PhantomData }
+        IcedBundle {
+            _sandbox: std::marker::PhantomData,
+        }
     }
 }
 
@@ -50,7 +52,6 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
             "iced_draw",
             &["iced_interop"],
         );
-
         Ok(())
     }
 }

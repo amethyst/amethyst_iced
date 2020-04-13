@@ -1,3 +1,4 @@
+use amethyst::ecs::{World, SystemData, Read};
 use amethyst::renderer::{
     pipeline::{PipelineDescBuilder, PipelinesBuilder},
     rendy::{
@@ -8,40 +9,42 @@ use amethyst::renderer::{
         mesh::AsVertex,
         shader::{Shader, SpirvShader},
     },
-    submodules::{DynamicUniform, DynamicVertexBuffer},
+    submodules::{DynamicUniform, DynamicVertexBuffer, TextureId, TextureSub},
     types::Backend,
     util::simple_shader_set,
 };
 use glam::{Mat4, Vec3};
 use glsl_layout::{mat4, AsStd140};
 
-use crate::vertex::TriangleVertex;
+use crate::vertex::TextVertex;
+use crate::systems::{TextVertexContainer, GlyphAtlas};
 
 lazy_static::lazy_static! {
-     static ref TRIANGLE_VERTEX: SpirvShader = SpirvShader::from_bytes(
-        include_bytes!("../../shaders/compiled/triangle.vert.spv"),
+     static ref TEXT_VERTEX: SpirvShader = SpirvShader::from_bytes(
+        include_bytes!("../../shaders/compiled/text.vert.spv"),
         ShaderStageFlags::VERTEX,
         "main",
     ).unwrap();
 
-    static ref TRIANGLE_FRAGMENT: SpirvShader = SpirvShader::from_bytes(
-        include_bytes!("../../shaders/compiled/triangle.frag.spv"),
+    static ref TEXT_FRAGMENT: SpirvShader = SpirvShader::from_bytes(
+        include_bytes!("../../shaders/compiled/text.frag.spv"),
         ShaderStageFlags::FRAGMENT,
         "main",
     ).unwrap();
 }
 
 #[derive(Debug)]
-pub struct TrianglePipeline<B: Backend> {
+pub struct TextPipeline<B: Backend> {
     pipeline: B::GraphicsPipeline,
     pipeline_layout: B::PipelineLayout,
-    pub vertex: DynamicVertexBuffer<B, TriangleVertex>,
-    pub uniforms: DynamicUniform<B, TriangleUniform>,
-    pub vertices: Vec<TriangleVertex>,
-    pub transform: TriangleUniform,
+    textures: TextureSub<B>,
+    pub vertex: DynamicVertexBuffer<B, TextVertex>,
+    pub uniforms: DynamicUniform<B, TextUniform>,
+    pub transform: TextUniform,
+    glyph_atlas_id: Option<TextureId>,
 }
 
-impl<B: Backend> TrianglePipeline<B> {
+impl<B: Backend> TextPipeline<B> {
     pub fn create_pipeline(
         factory: &Factory<B>,
         subpass: hal::pass::Subpass<'_, B>,
@@ -49,23 +52,24 @@ impl<B: Backend> TrianglePipeline<B> {
         fb_height: u32,
     ) -> Result<Self, failure::Error> {
         let uniforms =
-            DynamicUniform::<B, TriangleUniform>::new(factory, pso::ShaderStageFlags::VERTEX)?;
-        let layouts = vec![uniforms.raw_layout()];
+            DynamicUniform::<B, TextUniform>::new(factory, pso::ShaderStageFlags::VERTEX)?;
+        let textures = TextureSub::new(factory)?;
+        let layouts = vec![uniforms.raw_layout(), textures.raw_layout()];
         let pipeline_layout = unsafe {
             factory
                 .device()
                 .create_pipeline_layout(layouts, None as Option<(_, _)>)
         }?;
 
-        let vertex = DynamicVertexBuffer::<B, TriangleVertex>::new();
+        let vertex = DynamicVertexBuffer::<B, TextVertex>::new();
 
         let shader_vertex = unsafe {
-            TRIANGLE_VERTEX
+            TEXT_VERTEX
                 .module(factory)
                 .expect("Failed to create triangle_vertex module")
         };
         let shader_fragment = unsafe {
-            TRIANGLE_FRAGMENT
+            TEXT_FRAGMENT
                 .module(factory)
                 .expect("Failed to create triangle_fragment module")
         };
@@ -73,7 +77,7 @@ impl<B: Backend> TrianglePipeline<B> {
         let pipes = PipelinesBuilder::new()
             .with_pipeline(
                 PipelineDescBuilder::new()
-                    .with_vertex_desc(&[(TriangleVertex::vertex(), pso::VertexInputRate::Vertex)])
+                    .with_vertex_desc(&[(TextVertex::vertex(), pso::VertexInputRate::Vertex)])
                     .with_input_assembler(pso::InputAssemblerDesc::new(
                         hal::Primitive::TriangleList,
                     ))
@@ -105,7 +109,7 @@ impl<B: Backend> TrianglePipeline<B> {
                 2000.,
             ) * Mat4::from_translation(Vec3::new(0. - fb_width / 2., -fb_height / 2., 0.));
         let u_transform: mat4 = u_transform.to_cols_array_2d().into();
-        let transform = TriangleUniform { u_transform };
+        let transform = TextUniform { u_transform };
 
         match pipes {
             Err(e) => {
@@ -116,43 +120,54 @@ impl<B: Backend> TrianglePipeline<B> {
             }
             Ok(mut pipeline) => {
                 let pipeline = pipeline.remove(0);
-                Ok(TrianglePipeline {
+                Ok(TextPipeline {
                     pipeline,
                     pipeline_layout,
+                    textures,
                     uniforms,
                     vertex,
-                    vertices: vec![],
                     transform,
+                    glyph_atlas_id: None,
                 })
             }
         }
     }
 
-    pub fn dispose(self, factory: &mut Factory<B>) {
-        unsafe {
-            factory.device().destroy_graphics_pipeline(self.pipeline);
-            factory
-                .device()
-                .destroy_pipeline_layout(self.pipeline_layout);
+    pub fn bind_texture_id(&mut self, factory: &Factory<B>, world: &World) {
+        if self.glyph_atlas_id.is_some() {
+            return;
         }
+        let glyph_atlas = Read::<'_, GlyphAtlas>::fetch(world);    
+        let tex_handle = (*glyph_atlas).0.as_ref().unwrap();
+        let tex_id = self.textures.insert(factory, world, tex_handle, hal::image::Layout::General).unwrap().0;
+        self.glyph_atlas_id = Some(tex_id);
     }
 
-    pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize) {
-        if self.vertices.len() == 0 {
+    
+    pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize, world: &World) {
+        if self.glyph_atlas_id.is_none() {
             return;
+        }
+        let tex_id = self.glyph_atlas_id.unwrap();
+        
+        let text_vertex_container = Read::<'_, TextVertexContainer>::fetch(world);
+        if text_vertex_container.0.len() == 0 {
+            return; 
         }
 
         encoder.bind_graphics_pipeline(&self.pipeline);
         self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
         self.vertex.bind(index, 0, 0, encoder);
+        self.textures.bind(&self.pipeline_layout, 1, tex_id, encoder);
         unsafe {
-            encoder.draw(0..self.vertices.len() as u32, 0..1);
+            encoder.draw(0..text_vertex_container.0.len() as u32, 0..1);
+            //encoder.draw(0..6, 0..1);
         }
     }
 }
 
 #[derive(Clone, Debug, AsStd140)]
 #[repr(C, align(4))]
-pub struct TriangleUniform {
+pub struct TextUniform {
     u_transform: mat4,
 }

@@ -5,12 +5,12 @@ use amethyst::shrev::{EventChannel, ReaderId};
 use amethyst::window::ScreenDimensions;
 use amethyst::winit::{Event as WinitEvent, WindowEvent as WinitWindowEvent};
 use iced_native::{Cache, Size, UserInterface};
-use glyph_brush::GlyphBrush;
 
 use crate::backend::IcedRenderer;
 use crate::primitive::IcedPrimitives;
 use crate::sandbox::{Sandbox, SandboxContainer};
-use crate::vertex::TextVertex;
+
+use crate::IcedGlyphBrush;
 
 pub(crate) struct IcedDrawSystem<S: Sandbox> {
     _sandbox: std::marker::PhantomData<S>,
@@ -34,7 +34,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         Write<'a, EventChannel<<S as Sandbox>::UIMessage>>,
         Option<Read<'a, SandboxContainer<S>>>,
         Read<'a, AssetStorage<SpriteSheet>>,
-        WriteExpect<'a, GlyphBrush<'static, (u32, TextVertex)>>,
+        WriteExpect<'a, IcedGlyphBrush>,
         ReadExpect<'a, ScreenDimensions>,
         Write<'a, IcedPrimitives>,
     );

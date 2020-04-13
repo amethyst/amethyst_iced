@@ -1,4 +1,5 @@
 use amethyst::renderer::{
+    batch::OrderedOneLevelBatch,
     pipeline::{PipelineDescBuilder, PipelinesBuilder},
     rendy::{
         command::RenderPassEncoder,
@@ -9,12 +10,11 @@ use amethyst::renderer::{
         shader::{Shader, SpirvShader},
     },
     submodules::{DynamicUniform, DynamicVertexBuffer, TextureId, TextureSub},
-    batch::OrderedOneLevelBatch,
     types::Backend,
     util::simple_shader_set,
 };
-use glsl_layout::{mat4, AsStd140};
 use glam::{Mat4, Vec3};
+use glsl_layout::{mat4, AsStd140};
 
 use crate::vertex::image::ImageVertex;
 
@@ -31,7 +31,6 @@ lazy_static::lazy_static! {
         "main",
     ).unwrap();
 }
-
 
 #[derive(Debug)]
 pub struct ImagePipeline<B: Backend> {
@@ -52,18 +51,18 @@ impl<B: Backend> ImagePipeline<B> {
         fb_height: u32,
     ) -> Result<Self, failure::Error> {
         let uniforms =
-        DynamicUniform::<B, ImageUniform>::new(factory, pso::ShaderStageFlags::VERTEX)?;
+            DynamicUniform::<B, ImageUniform>::new(factory, pso::ShaderStageFlags::VERTEX)?;
         let textures = TextureSub::new(factory)?;
         let layouts = vec![uniforms.raw_layout(), textures.raw_layout()];
         let pipeline_layout = unsafe {
             factory
-            .device()
-            .create_pipeline_layout(layouts, None as Option<(_, _)>)
+                .device()
+                .create_pipeline_layout(layouts, None as Option<(_, _)>)
         }?;
-            
+
         let vertex = DynamicVertexBuffer::<B, ImageVertex>::new();
         let batches = OrderedOneLevelBatch::<TextureId, ImageVertex>::default();
-        
+
         let shader_vertex = unsafe {
             IMAGE_VERTEX
                 .module(factory)
@@ -98,10 +97,17 @@ impl<B: Backend> ImagePipeline<B> {
             factory.destroy_shader_module(shader_fragment);
         }
 
-
         let fb_width = fb_width as f32;
         let fb_height = fb_height as f32;
-        let u_transform = Mat4::orthographic_lh(-fb_width/2., fb_width/2., -fb_height/2., fb_height/2., 0.1, 2000.) * Mat4::from_translation(Vec3::new(0. -fb_width/2., -fb_height/2., 0.));
+        let u_transform =
+            Mat4::orthographic_lh(
+                -fb_width / 2.,
+                fb_width / 2.,
+                -fb_height / 2.,
+                fb_height / 2.,
+                0.1,
+                2000.,
+            ) * Mat4::from_translation(Vec3::new(0. - fb_width / 2., -fb_height / 2., 0.));
         let u_transform: mat4 = u_transform.to_cols_array_2d().into();
         let transform = ImageUniform { u_transform };
 
@@ -112,7 +118,7 @@ impl<B: Backend> ImagePipeline<B> {
                 }
                 Err(e)
             }
-             Ok(mut pipeline) => {
+            Ok(mut pipeline) => {
                 let pipeline = pipeline.remove(0);
                 Ok(ImagePipeline {
                     pipeline,
@@ -125,7 +131,6 @@ impl<B: Backend> ImagePipeline<B> {
                 })
             }
         }
-
     }
 
     pub fn dispose(self, factory: &mut Factory<B>) {
@@ -145,10 +150,10 @@ impl<B: Backend> ImagePipeline<B> {
         encoder.bind_graphics_pipeline(&self.pipeline);
         self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
         self.vertex.bind(index, 0, 0, encoder);
-        self.batches.iter().for_each(|(&tex, range)| {
+        self.batches.iter().for_each(|(&tex, verts)| {
             self.textures.bind(&self.pipeline_layout, 1, tex, encoder);
             unsafe {
-                encoder.draw(0..6, range);
+                encoder.draw(verts, 0..1);
             }
         });
     }
