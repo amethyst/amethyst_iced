@@ -10,8 +10,8 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Color, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text,
-};
+    Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text
+}; 
 
 fn main() -> Result<(), Error> {
     amethyst::start_logger(Default::default());
@@ -25,46 +25,48 @@ fn main() -> Result<(), Error> {
                 .with_plugin(RenderToWindow::from_config_path(display_config)?)
                 .with_plugin(IcedUI::default()),
         )?
-        .with_bundle(IcedBundle::<HelloUIState>::default())?;
+        .with_bundle(IcedBundle::<CounterUIState>::default())?;
 
-    let mut game = Application::new(assets, HelloState::default(), game_data)?;
+    let mut game = Application::new(assets, CounterState::default(), game_data)?;
     game.run();
 
     Ok(())
 }
 
 #[derive(Default)]
-struct HelloState;
+struct CounterState;
 
-impl SimpleState for HelloState {
+impl SimpleState for CounterState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let StateData { world, .. } = data;
-        world.insert(SandboxContainer::new(HelloUIState::default()));
+        world.insert(SandboxContainer::new(CounterUIState::default()));
     }
 }
 
 #[derive(Default, Debug)]
-struct HelloUIState;
+struct CounterUIState {
+    pressed: u32,
+    button_state: ButtonState, 
+}
 
-impl Sandbox for HelloUIState {
-    type UIMessage = u32;
+#[derive(Clone)]
+enum CounterUIMessage {
+    Clicked,
+}
+
+impl Sandbox for CounterUIState {
+    type UIMessage = CounterUIMessage;
     type GameMessage = ();
 
     fn view(&mut self) -> Element<Self::UIMessage> {
         let col = Column::new()
-            .spacing(5)
             .push(
-                Text::new("Test red")
-                    .size(40)
-                    .color(Color::from_rgb(1., 0., 0.)),
+                Text::new(format!("Pressed {} times", self.pressed))
             )
             .push(
-                Text::new("Test white")
-                    .color(Color::from_rgb(1., 1., 1.)),
-            )
-            .push(Text::new("Test green").color(Color::from_rgb(0., 1., 0.)))
-            .push(Text::new("Test blue").color(Color::from_rgb(0., 0., 1.)))
-            .push(Text::new("Test yellow").color(Color::from_rgb(1., 1., 0.)));
+                Button::<'_, '_, Self::UIMessage>::new(&mut self.button_state, Text::new("Click me !"))
+                .on_press(CounterUIMessage::Clicked)
+            );
 
         Container::new(col)
             .width(Length::Fill)
@@ -72,5 +74,15 @@ impl Sandbox for HelloUIState {
             .center_x()
             .center_y()
             .into()
+    }
+
+    fn update(&mut self, message: &Self::UIMessage) -> Vec<Self::GameMessage> {
+        match message {
+            CounterUIMessage::Clicked => {
+                println!("clicked");
+                self.pressed += 1;
+            } ,
+        }
+        vec![]
     }
 }

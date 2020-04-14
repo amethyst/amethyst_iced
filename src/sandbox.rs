@@ -19,7 +19,7 @@ pub trait Sandbox: Send + Sync + 'static {
         vec![]
     }
 
-    fn view(&self) -> Element<Self::UIMessage>;
+    fn view(&mut self) -> Element<Self::UIMessage>;
 }
 
 #[derive(Default)]
@@ -41,7 +41,7 @@ impl<S: Sandbox> Sandbox for SandboxContainer<S> {
         self.0.update(message)
     }
 
-    fn view(&self) -> Element<S::UIMessage> {
+    fn view(&mut self) -> Element<S::UIMessage> {
         self.0.view()
     }
 }

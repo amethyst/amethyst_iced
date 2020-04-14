@@ -16,7 +16,6 @@ use glsl_layout::AsStd140;
 use crate::systems::TextVertexContainer;
 use crate::pipelines::{ImagePipeline, TextPipeline, TrianglePipeline};
 use crate::{primitive::IcedPrimitives, vertex::TriangleVertex};
-use crate::vertex::TextVertex;
 
 #[derive(Default, Debug)]
 pub struct IcedPassDesc;
@@ -125,35 +124,6 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             Some(&(text_vertex_container.0)),
         );
 
-        /*
-        let verts: Vec<TextVertex> = vec![
-            TextVertex {
-                position: [-1.,-1.].into(),
-                uv: [0.,0.].into(),
-            },
-            TextVertex {
-                position: [-1.,1.].into(),
-                uv: [0.,1.].into(),
-            },
-            TextVertex {
-                position: [1.,1.].into(),
-                uv: [1.,1.].into(),
-            },
-            TextVertex {
-                position: [-1.,-1.].into(),
-                uv: [0.,0.].into(),
-            },
-            TextVertex {
-                position: [1.,-1.].into(),
-                uv: [1.,0.].into(),
-            },
-            TextVertex {
-                position: [1.,1.].into(),
-                uv: [1.,1.].into(),
-            },
-        ];
-        self.text_pipeline.vertex.write(factory, index, 6, Some(verts.into_iter().collect::<Box<[TextVertex]>>()));
-        */
         PrepareResult::DrawRecord
     }
 

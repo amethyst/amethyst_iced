@@ -68,7 +68,7 @@ impl Sandbox for ImageUIState {
     type UIMessage = u32;
     type GameMessage = ();
 
-    fn view(&self) -> Element<Self::UIMessage> {
+    fn view(&mut self) -> Element<Self::UIMessage> {
         let col = Column::new()
             .spacing(5)
             .align_items(Align::Center)
