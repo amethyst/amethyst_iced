@@ -10,7 +10,7 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
+    Align, Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
     SandboxContainer, Text,
 };
 
@@ -23,7 +23,7 @@ fn main() -> Result<(), Error> {
     let game_data = GameDataBuilder::default()
         .with_bundle(
             RenderingBundle::<Backend>::new()
-                .with_plugin(RenderToWindow::from_config_path(display_config)?)
+                .with_plugin(RenderToWindow::from_config_path(display_config)?.with_clear([0.1,0.1,0.1,1.0]))
                 .with_plugin(IcedUI::default()),
         )?
         .with_bundle(IcedBundle::<CounterUIState>::default())?;
@@ -61,6 +61,7 @@ impl Sandbox for CounterUIState {
 
     fn view(&mut self) -> Element<Self::UIMessage> {
         let col = Column::new()
+            .align_items(Align::Center)
             .push(Text::new(format!("Pressed {} times", self.pressed)))
             .push(
                 Button::<'_, '_, Self::UIMessage>::new(
