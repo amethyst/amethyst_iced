@@ -3,6 +3,7 @@ mod checkbox;
 mod column;
 mod container;
 mod pane;
+mod progress_bar;
 mod radio;
 mod row;
 mod slider;
@@ -16,6 +17,7 @@ pub type Checkbox<'a, Message> = iced_native::Checkbox<Message, IcedRenderer<'a>
 pub type Container<'a, 'r, Message> = iced_native::Container<'a, Message, IcedRenderer<'r>>;
 pub type Column<'a, 'r, Message> = iced_native::Column<'a, Message, IcedRenderer<'r>>;
 pub type PaneGrid<'a, 'r, Message> = iced_native::PaneGrid<'a, Message, IcedRenderer<'r>>;
+pub type ProgressBar<'a> = iced_native::ProgressBar<IcedRenderer<'a>>;
 pub type Slider<'a, 'r, Message> = iced_native::Slider<'a, Message, IcedRenderer<'r>>;
 pub type Space = iced_native::Space;
 pub type Radio<'a, Message> = iced_native::Radio<Message, IcedRenderer<'a>>;
