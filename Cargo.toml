@@ -9,7 +9,7 @@ amethyst = "0.15"
 failure = "0.1"
 glam = "0.8.6"
 glsl-layout = "0.3"
-iced_native = { path = "../iced/native" } 
+iced_native = { git = "https://github.com/hecrj/iced", rev = "b44f14e1863d251cc960a6252c8d0110f3062215"} 
 iced_winit = "0.1.0"
 lazy_static = "1.4.0"
 log = "0.4.8"
