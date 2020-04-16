@@ -1,4 +1,4 @@
-use amethyst::ecs::{World, SystemData, Read};
+use amethyst::ecs::{Read, SystemData, World};
 use amethyst::renderer::{
     pipeline::{PipelineDescBuilder, PipelinesBuilder},
     rendy::{
@@ -16,8 +16,8 @@ use amethyst::renderer::{
 use glam::{Mat4, Vec3};
 use glsl_layout::{mat4, AsStd140};
 
+use crate::systems::{GlyphAtlas, TextVertexContainer};
 use crate::vertex::TextVertex;
-use crate::systems::{TextVertexContainer, GlyphAtlas};
 
 lazy_static::lazy_static! {
      static ref TEXT_VERTEX: SpirvShader = SpirvShader::from_bytes(
@@ -37,7 +37,7 @@ lazy_static::lazy_static! {
 pub struct TextPipeline<B: Backend> {
     pipeline: B::GraphicsPipeline,
     pipeline_layout: B::PipelineLayout,
-    textures: TextureSub<B>,
+    pub textures: TextureSub<B>,
     pub vertex: DynamicVertexBuffer<B, TextVertex>,
     pub uniforms: DynamicUniform<B, TextUniform>,
     pub transform: TextUniform,
@@ -137,31 +137,49 @@ impl<B: Backend> TextPipeline<B> {
         if self.glyph_atlas_id.is_some() {
             return;
         }
-        let glyph_atlas = Read::<'_, GlyphAtlas>::fetch(world);    
+        let glyph_atlas = Read::<'_, GlyphAtlas>::fetch(world);
         let tex_handle = (*glyph_atlas).0.as_ref().unwrap();
-        let tex_id = self.textures.insert(factory, world, tex_handle, hal::image::Layout::General).unwrap().0;
+        let tex_id = self
+            .textures
+            .insert(factory, world, tex_handle, hal::image::Layout::General)
+            .unwrap()
+            .0;
         self.glyph_atlas_id = Some(tex_id);
     }
 
-    
     pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize, world: &World) {
         if self.glyph_atlas_id.is_none() {
             return;
         }
         let tex_id = self.glyph_atlas_id.unwrap();
-        
+
         let text_vertex_container = Read::<'_, TextVertexContainer>::fetch(world);
         if text_vertex_container.0.len() == 0 {
-            return; 
+            return;
         }
 
         encoder.bind_graphics_pipeline(&self.pipeline);
         self.uniforms.bind(index, &self.pipeline_layout, 0, encoder);
         self.vertex.bind(index, 0, 0, encoder);
-        self.textures.bind(&self.pipeline_layout, 1, tex_id, encoder);
+        self.textures
+            .bind(&self.pipeline_layout, 1, tex_id, encoder);
         unsafe {
             encoder.draw(0..text_vertex_container.0.len() as u32, 0..1);
             //encoder.draw(0..6, 0..1);
+        }
+    }
+
+    pub fn reset(&mut self, factory: &Factory<B>, index: usize, world: &World) {
+        self.uniforms.write(factory, index, self.transform.std140());
+        self.bind_texture_id(factory, world);
+    }
+
+    pub fn dispose(self, factory: &Factory<B>) {
+        unsafe {
+            factory.device().destroy_graphics_pipeline(self.pipeline);
+            factory
+                .device()
+                .destroy_pipeline_layout(self.pipeline_layout);
         }
     }
 }

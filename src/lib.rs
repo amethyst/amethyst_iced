@@ -17,10 +17,8 @@ pub use plugin::IcedUI;
 pub use sandbox::{Element, Sandbox, SandboxContainer};
 
 // Conveniently re-exports iced's Widget types
-pub use iced_native::{Align, button::State as ButtonState, Color, Length, Text};
+pub use iced_native::{button::State as ButtonState, Align, Color, Length, Text};
 
 pub use widget::*;
-
-
 
 pub type IcedGlyphBrush = glyph_brush::GlyphBrush<'static, (u32, Vec<crate::vertex::TextVertex>)>;

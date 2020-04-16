@@ -142,6 +142,11 @@ impl<B: Backend> ImagePipeline<B> {
         }
     }
 
+    pub fn reset(&mut self, factory: &Factory<B>, index: usize) {
+        self.batches.swap_clear();
+        self.uniforms.write(factory, index, self.transform.std140());
+    }
+
     pub fn draw(&self, encoder: &mut RenderPassEncoder<'_, B>, index: usize) {
         if self.batches.count() == 0 {
             return;

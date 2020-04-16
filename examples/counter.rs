@@ -10,8 +10,9 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox, SandboxContainer, Text
-}; 
+    Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
+    SandboxContainer, Text,
+};
 
 fn main() -> Result<(), Error> {
     amethyst::start_logger(Default::default());
@@ -46,7 +47,7 @@ impl SimpleState for CounterState {
 #[derive(Default, Debug)]
 struct CounterUIState {
     pressed: u32,
-    button_state: ButtonState, 
+    button_state: ButtonState,
 }
 
 #[derive(Clone)]
@@ -60,12 +61,13 @@ impl Sandbox for CounterUIState {
 
     fn view(&mut self) -> Element<Self::UIMessage> {
         let col = Column::new()
+            .push(Text::new(format!("Pressed {} times", self.pressed)))
             .push(
-                Text::new(format!("Pressed {} times", self.pressed))
-            )
-            .push(
-                Button::<'_, '_, Self::UIMessage>::new(&mut self.button_state, Text::new("Click me !"))
-                .on_press(CounterUIMessage::Clicked)
+                Button::<'_, '_, Self::UIMessage>::new(
+                    &mut self.button_state,
+                    Text::new("Click me !"),
+                )
+                .on_press(CounterUIMessage::Clicked),
             );
 
         Container::new(col)
@@ -79,9 +81,8 @@ impl Sandbox for CounterUIState {
     fn update(&mut self, message: &Self::UIMessage) -> Vec<Self::GameMessage> {
         match message {
             CounterUIMessage::Clicked => {
-                println!("clicked");
                 self.pressed += 1;
-            } ,
+            }
         }
         vec![]
     }

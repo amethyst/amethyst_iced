@@ -26,11 +26,11 @@ pub enum AmethystIcedPrimitive {
 
 /// Wrapper struct meant to avoid an user from interfering (accidentally or not)
 /// into amethyst_iced's primitives
-pub(crate) struct IcedPrimitives(pub(crate) Option<AmethystIcedPrimitive>);
+pub(crate) struct IcedPrimitives(pub(crate) Option<AmethystIcedPrimitive>, pub u64);
 
 impl Default for IcedPrimitives {
     fn default() -> Self {
-        IcedPrimitives(None)
+        IcedPrimitives(None, 0)
     }
 }
 

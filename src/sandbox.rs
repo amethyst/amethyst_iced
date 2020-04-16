@@ -1,4 +1,5 @@
 use crate::backend::IcedRenderer;
+use iced_native::Hasher;
 
 pub type Element<'a, 'r, Message> = iced_native::Element<'a, Message, IcedRenderer<'r>>;
 
@@ -20,6 +21,10 @@ pub trait Sandbox: Send + Sync + 'static {
     }
 
     fn view(&mut self) -> Element<Self::UIMessage>;
+
+    fn hash_layout(&mut self, state: &mut Hasher) {
+        self.view().hash_layout(state)
+    }
 }
 
 #[derive(Default)]
