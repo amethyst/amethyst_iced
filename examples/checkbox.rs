@@ -10,7 +10,7 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Align, Column, Container, Element, IcedBundle, IcedUI, Length, Checkbox, Sandbox,
+    Align, Checkbox, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
     SandboxContainer, Text,
 };
 
@@ -101,7 +101,7 @@ impl Sandbox for CheckboxUIState {
                         self.likes_sausage,
                         "Sausage",
                         CheckboxUIMessage::ToggleSausage,
-                    ))
+                    )),
             );
 
         Container::new(col)
@@ -114,11 +114,11 @@ impl Sandbox for CheckboxUIState {
 
     fn update(&mut self, message: &Self::UIMessage) -> Vec<Self::GameMessage> {
         match message {
-            CheckboxUIMessage::ToggleChocolate(v) => self.likes_chocolate = *v, 
-            CheckboxUIMessage::TogglePasta(v) => self.likes_pasta = *v, 
-            CheckboxUIMessage::TogglePizza(v) => self.likes_pizza = *v, 
-            CheckboxUIMessage::ToggleTartiflette(v) => self.likes_tartiflette = *v, 
-            CheckboxUIMessage::ToggleSausage(v) => self.likes_sausage = *v, 
+            CheckboxUIMessage::ToggleChocolate(v) => self.likes_chocolate = *v,
+            CheckboxUIMessage::TogglePasta(v) => self.likes_pasta = *v,
+            CheckboxUIMessage::TogglePizza(v) => self.likes_pizza = *v,
+            CheckboxUIMessage::ToggleTartiflette(v) => self.likes_tartiflette = *v,
+            CheckboxUIMessage::ToggleSausage(v) => self.likes_sausage = *v,
         }
         vec![]
     }

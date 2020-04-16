@@ -4,9 +4,7 @@ use iced_native::Rectangle;
 use crate::backend::IcedRenderer;
 use crate::primitive::AmethystIcedPrimitive;
 
-
 impl<'a> Renderer for IcedRenderer<'a> {
-    
     const DEFAULT_SIZE: u16 = 20;
     const DEFAULT_SPACING: u16 = 20;
 

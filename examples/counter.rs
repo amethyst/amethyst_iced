@@ -67,7 +67,7 @@ impl Sandbox for CounterUIState {
             .align_items(Align::Center)
             .push(Text::new(format!("Pressed {} times", self.pressed)))
             .push(
-                Button::<'_, '_, Self::UIMessage>::new(
+                Button::new(
                     &mut self.button_state,
                     Text::new("Click me !"),
                 )

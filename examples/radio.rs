@@ -107,13 +107,13 @@ impl Sandbox for RadioUIState {
                         "Java",
                         self.choice,
                         RadioUIMessage::Selected,
-                    )))
-                    .push(Text::new(if self.choice == Some(Choice::Rust) {
-                        "right!"
-                    } else {
-                        "wrong."
-                    }),
-            );
+                    )),
+            )
+            .push(Text::new(if self.choice == Some(Choice::Rust) {
+                "right!"
+            } else {
+                "wrong."
+            }));
 
         Container::new(col)
             .width(Length::Fill)

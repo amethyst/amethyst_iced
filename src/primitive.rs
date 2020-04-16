@@ -137,7 +137,7 @@ impl AmethystIcedPrimitive {
                         .h_align(into_h_align(horizontal_alignment))
                         // Todo: support proper Vertical alignment
                         .v_align(VerticalAlign::Top),
-                        //.v_align(into_v_align(vertical_alignment)),
+                    //.v_align(into_v_align(vertical_alignment)),
                     ..Default::default()
                 });
             }
