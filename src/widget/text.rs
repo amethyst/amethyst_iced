@@ -28,7 +28,7 @@ impl<'a> TextRenderer for IcedRenderer<'a> {
         _font: Font,
         color: Option<Color>,
         horizontal_alignment: HorizontalAlignment,
-        vertical_alignment: VerticalAlignment,
+        _vertical_alignment: VerticalAlignment,
     ) -> Self::Output {
         let color = color.unwrap_or(Color::WHITE);
         let color = [color.r, color.g, color.b, color.a];
@@ -37,7 +37,6 @@ impl<'a> TextRenderer for IcedRenderer<'a> {
             content: content.to_string(),
             size,
             color,
-            vertical_alignment,
             horizontal_alignment,
         }
     }

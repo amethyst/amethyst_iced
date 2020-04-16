@@ -69,44 +69,42 @@ impl<'a, B: Backend> System<'a> for IcedDrawGlyphSystem<B> {
             .and_then(B::unwrap_texture)
             .unwrap();
         let action = iced_glyph_brush.process_queued(
-            |rect, data| {
-                unsafe {
-                    factory
-                        .upload_image(
-                            glyph_tex.image().clone(),
-                            rect.width(),
-                            rect.height(),
-                            hal::image::SubresourceLayers {
-                                aspects: hal::format::Aspects::COLOR,
-                                level: 0,
-                                layers: 0..1,
-                            },
-                            hal::image::Offset {
-                                x: rect.min.x as _,
-                                y: rect.min.y as _,
-                                z: 0,
-                            },
-                            hal::image::Extent {
-                                width: rect.width(),
-                                height: rect.height(),
-                                depth: 1,
-                            },
-                            data,
-                            ImageState {
-                                queue,
-                                stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
-                                access: hal::image::Access::SHADER_READ,
-                                layout: hal::image::Layout::General,
-                            },
-                            ImageState {
-                                queue,
-                                stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
-                                access: hal::image::Access::SHADER_READ,
-                                layout: hal::image::Layout::General,
-                            },
-                        )
-                        .unwrap();
-                }
+            |rect, data| unsafe {
+                factory
+                    .upload_image(
+                        glyph_tex.image().clone(),
+                        rect.width(),
+                        rect.height(),
+                        hal::image::SubresourceLayers {
+                            aspects: hal::format::Aspects::COLOR,
+                            level: 0,
+                            layers: 0..1,
+                        },
+                        hal::image::Offset {
+                            x: rect.min.x as _,
+                            y: rect.min.y as _,
+                            z: 0,
+                        },
+                        hal::image::Extent {
+                            width: rect.width(),
+                            height: rect.height(),
+                            depth: 1,
+                        },
+                        data,
+                        ImageState {
+                            queue,
+                            stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
+                            access: hal::image::Access::SHADER_READ,
+                            layout: hal::image::Layout::General,
+                        },
+                        ImageState {
+                            queue,
+                            stage: hal::pso::PipelineStage::FRAGMENT_SHADER,
+                            access: hal::image::Access::SHADER_READ,
+                            layout: hal::image::Layout::General,
+                        },
+                    )
+                    .unwrap();
             },
             |glyph| {
                 // TODO: dont display glyph if out of screen bounds

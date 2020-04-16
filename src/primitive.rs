@@ -5,7 +5,7 @@ use amethyst::ecs::{SystemData, World, WriteExpect};
 use amethyst::renderer::{rendy::factory::Factory, rendy::hal, types::Backend};
 use glsl_layout::vec4;
 use glyph_brush::{rusttype::Scale, HorizontalAlign, Layout, Section, VerticalAlign};
-use iced_native::{Color, HorizontalAlignment, Rectangle, VerticalAlignment};
+use iced_native::{Color, HorizontalAlignment, Rectangle};
 
 use crate::IcedGlyphBrush;
 
@@ -19,9 +19,9 @@ pub enum AmethystIcedPrimitive {
         size: u16,
         color: [f32; 4],
         horizontal_alignment: HorizontalAlignment,
-        vertical_alignment: VerticalAlignment,
     },
     Group(Vec<AmethystIcedPrimitive>),
+    None,
 }
 
 /// Wrapper struct meant to avoid an user from interfering (accidentally or not)
@@ -125,7 +125,6 @@ impl AmethystIcedPrimitive {
                 size,
                 bounds,
                 horizontal_alignment,
-                vertical_alignment,
             } => {
                 let mut iced_glyph_brush = WriteExpect::<'_, IcedGlyphBrush>::fetch(world);
                 iced_glyph_brush.queue(Section {
@@ -136,10 +135,13 @@ impl AmethystIcedPrimitive {
                     screen_position: (bounds.x, bounds.y),
                     layout: Layout::default()
                         .h_align(into_h_align(horizontal_alignment))
-                        .v_align(into_v_align(vertical_alignment)),
+                        // Todo: support proper Vertical alignment
+                        .v_align(VerticalAlign::Top),
+                        //.v_align(into_v_align(vertical_alignment)),
                     ..Default::default()
                 });
             }
+            AmethystIcedPrimitive::None => {}
         }
     }
 }
@@ -152,6 +154,7 @@ pub fn into_h_align(align: HorizontalAlignment) -> HorizontalAlign {
     }
 }
 
+/*
 pub fn into_v_align(align: VerticalAlignment) -> VerticalAlign {
     match align {
         VerticalAlignment::Top => VerticalAlign::Top,
@@ -159,3 +162,4 @@ pub fn into_v_align(align: VerticalAlignment) -> VerticalAlign {
         VerticalAlignment::Bottom => VerticalAlign::Bottom,
     }
 }
+*/

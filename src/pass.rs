@@ -54,7 +54,7 @@ impl<B: Backend> RenderGroupDesc<B, World> for IcedPassDesc {
             triangle_pipeline,
             image_pipeline,
             text_pipeline,
-            prev_hash_layout: vec![0,0,0,0,0],
+            prev_hash_layout: vec![0, 0, 0, 0, 0],
         }))
     }
 }
@@ -77,7 +77,7 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         world: &World,
     ) -> PrepareResult {
         let mut iced_primitives = Write::<'_, IcedPrimitives>::fetch(world);
-        
+
         self.image_pipeline.reset(factory, index);
         self.text_pipeline.reset(factory, index, world);
 
@@ -87,21 +87,21 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             index,
             self.triangle_pipeline.transform.std140(),
         );
-        
+
         if let Some(iced_primitives) = iced_primitives.0.take() {
             iced_primitives.render(self, factory, index, world);
         }
-        
+
         self.triangle_pipeline.vertex.write(
             factory,
             index,
             self.triangle_pipeline.vertices.len() as u64,
             Some(
                 self.triangle_pipeline
-                .vertices
-                .clone()
-                .into_iter()
-                .collect::<Box<[TriangleVertex]>>(),
+                    .vertices
+                    .clone()
+                    .into_iter()
+                    .collect::<Box<[TriangleVertex]>>(),
             ),
         );
         self.image_pipeline.vertex.write(
@@ -110,7 +110,7 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             self.image_pipeline.batches.count() as u64,
             Some(self.image_pipeline.batches.data()),
         );
-        
+
         let text_vertex_container = Read::<'_, TextVertexContainer>::fetch(world);
         self.text_pipeline.vertex.write(
             factory,
@@ -118,10 +118,10 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
             text_vertex_container.0.len() as u64,
             Some(&(text_vertex_container.0)),
         );
-        
+
         self.text_pipeline.textures.maintain(factory, world);
         self.image_pipeline.textures.maintain(factory, world);
-        
+
         /*
         if let Some(hash) = self.prev_hash_layout.get(index) {
             if iced_primitives.1 == *hash { return PrepareResult::DrawReuse; }
@@ -130,7 +130,7 @@ impl<B: Backend> RenderGroup<B, World> for IcedPass<B> {
         */
         PrepareResult::DrawRecord
     }
-    
+
     fn draw_inline(
         &mut self,
         mut encoder: RenderPassEncoder<'_, B>,

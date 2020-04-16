@@ -17,7 +17,9 @@ pub use plugin::IcedUI;
 pub use sandbox::{Element, Sandbox, SandboxContainer};
 
 // Conveniently re-exports iced's Widget types
-pub use iced_native::{button::State as ButtonState, slider::State as SliderState, Align, Color, Length, Text};
+pub use iced_native::{
+    button::State as ButtonState, slider::State as SliderState, Align, Color, Length, Text,
+};
 
 pub use widget::*;
 
