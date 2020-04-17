@@ -10,7 +10,7 @@ use amethyst::{
     Error,
 };
 use amethyst_iced::{
-    Align, Button, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
+    Align, Button, ButtonStyle, ButtonState, Column, Container, Element, IcedBundle, IcedUI, Length, Sandbox,
     SandboxContainer, Text,
 };
 
@@ -71,7 +71,8 @@ impl Sandbox for CounterUIState {
                     &mut self.button_state,
                     Text::new("Click me !"),
                 )
-                .on_press(CounterUIMessage::Clicked),
+                .on_press(CounterUIMessage::Clicked)
+                .style(ButtonStyle::primary()),
             );
 
         Container::new(col)

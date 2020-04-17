@@ -10,6 +10,7 @@ mod systems;
 mod uniform;
 mod vertex;
 pub mod widget;
+pub mod style;
 
 pub use bundle::IcedBundle;
 pub use custom_widget::*;
@@ -22,5 +23,6 @@ pub use iced_native::{
 };
 
 pub use widget::*;
+pub use style::*;
 
 pub type IcedGlyphBrush = glyph_brush::GlyphBrush<'static, (u32, Vec<crate::vertex::TextVertex>)>;

@@ -12,6 +12,7 @@ mod text;
 
 use crate::backend::IcedRenderer;
 
+pub use button::ButtonStyle;
 pub type Button<'a, 'r, Message> = iced_native::Button<'a, Message, IcedRenderer<'r>>;
 pub type Checkbox<'a, Message> = iced_native::Checkbox<Message, IcedRenderer<'a>>;
 pub type Container<'a, 'r, Message> = iced_native::Container<'a, Message, IcedRenderer<'r>>;

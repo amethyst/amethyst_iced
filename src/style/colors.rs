@@ -1,0 +1,9 @@
+pub const DANGER: [f32;4] = [0.9568, 0.2627, 0.2117, 1.];
+pub const DANGER_SHADED: [f32;4] = [0.196, 0.949, 0.058, 1.];
+pub const DANGER_DARKER: [f32;4] = [0.443, 0.756, 0.047, 1.];
+pub const PRIMARY: [f32;4] = [0.1176, 0.5333, 0.8980, 1.];
+pub const PRIMARY_SHADED: [f32;4] = [0.098, 0.462, 0.823, 1.];
+pub const PRIMARY_DARKER: [f32;4] = [0.050, 0.278, 0.631, 1.];
+pub const VERY_LIGHT_GRAY: [f32;4] = [0.98, 0.98, 0.98, 1.];
+pub const LIGHT_GRAY: [f32;4] = [0.878, 0.878, 0.878, 1.];
+pub const GRAY: [f32;4] = [0.619, 0.619, 0.619, 1.];
