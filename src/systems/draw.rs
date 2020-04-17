@@ -11,6 +11,7 @@ use iced_native::{Cache, Size, UserInterface};
 use crate::backend::IcedRenderer;
 use crate::primitive::IcedPrimitives;
 use crate::sandbox::{Sandbox, SandboxContainer};
+use crate::resources::FontCache;
 
 use crate::IcedGlyphBrush;
 
@@ -39,6 +40,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         Option<Write<'a, SandboxContainer<S>>>,
         Read<'a, AssetStorage<SpriteSheet>>,
         WriteExpect<'a, IcedGlyphBrush>,
+        Read<'a, FontCache>,
         ReadExpect<'a, ScreenDimensions>,
         Write<'a, IcedPrimitives>,
     );
@@ -51,6 +53,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
             sandbox,
             sprite_sheet,
             glyph_brush,
+            font_cache,
             screen_dimensions,
             mut iced_primitives,
         ): Self::SystemData,
@@ -61,7 +64,7 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
         }
         let mut sandbox = sandbox.unwrap();
         {
-            let mut renderer = IcedRenderer::new(sprite_sheet, glyph_brush);
+            let mut renderer = IcedRenderer::new(sprite_sheet, glyph_brush, font_cache);
 
             let reader = self
                 .winit_reader_id

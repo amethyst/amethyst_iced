@@ -41,10 +41,11 @@ See the examples. Sorry for the lack of comments.
 
 * Improve the global code quality of the codebase and of the examples. This crate is poorly documented, and was written merely as a proof of concept. 
 * Review/Audit the IcedUI Rendy plugin as I am confident I have done a horrible job at "Rendy best practices". 
+* Review/Audit/Refactor hacky and inefficient custom font loading for Text widgets
+* Make helpers to make custom font easier to use
 * Support spritesheet for Image widget
 * Support nine-patch for Image widget (more on that below)
 * Fix radio buttons so they don't look like Checkboxes. Broadly speaking, design a way of using Lyon to render shapes, possibly getting inspiration from amethyst_lyon.  
-* Support custom font loading for Text widgets
 * Support Iced's debugger
 * Support Images and Nine-Patches using custom styling for a variety of widgets where it would be applicable : 
     * Buttons, 

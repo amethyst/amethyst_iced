@@ -5,6 +5,7 @@ mod pass;
 mod pipelines;
 mod plugin;
 mod primitive;
+mod resources;
 pub mod sandbox;
 mod systems;
 mod uniform;
@@ -19,10 +20,11 @@ pub use sandbox::{Element, Sandbox, SandboxContainer};
 
 // Conveniently re-exports iced's Widget types
 pub use iced_native::{
-    button::State as ButtonState, slider::State as SliderState, pane_grid::self, Align, Color, Length, Text, HorizontalAlignment, VerticalAlignment
+    button::State as ButtonState, slider::State as SliderState, pane_grid::self, Align, Color, Length, Text, HorizontalAlignment, VerticalAlignment, Font
 };
 
 pub use widget::*;
 pub use style::*;
+pub use resources::*;
 
 pub type IcedGlyphBrush = glyph_brush::GlyphBrush<'static, (u32, Vec<crate::vertex::TextVertex>)>;

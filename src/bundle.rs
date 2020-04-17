@@ -3,13 +3,15 @@ use amethyst::{
     ecs::{DispatcherBuilder, World},
     shrev::EventChannel,
     Error,
+    ui::FontAsset,
+    assets::Processor,
 };
 use glyph_brush::GlyphBrushBuilder;
 
 use crate::{
     primitive::IcedPrimitives,
     sandbox::Sandbox,
-    systems::{IcedDrawSystem, IcedInteropSystem},
+    systems::{IcedDrawSystem, IcedInteropSystem, LoadFontToCacheSystem},
     IcedGlyphBrush,
 };
 
@@ -51,6 +53,16 @@ impl<'a, 'b, S: Sandbox> SystemBundle<'a, 'b> for IcedBundle<S> {
             IcedDrawSystem::<S>::default(),
             "iced_draw",
             &["iced_interop"],
+        );
+        dispatcher.add(
+            Processor::<FontAsset>::new(),
+            "iced_font_processor",
+            &[],
+        );
+        dispatcher.add(
+            LoadFontToCacheSystem::default(),
+            "iced_load_font_to_cache",
+            &[]
         );
         Ok(())
     }
