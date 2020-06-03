@@ -121,8 +121,8 @@ impl<'a, S: Sandbox> System<'a> for IcedDrawSystem<S> {
                         ..
                     } => Some(iced_native::Event::Mouse(
                         iced_native::input::mouse::Event::CursorMoved {
-                            x: position.x as f32,
-                            y: position.y as f32,
+                            x: position.x as f32 * screen_dimensions.hidpi_factor() as f32,
+                            y: position.y as f32 * screen_dimensions.hidpi_factor() as f32,
                         },
                     )),
                     _ => None,
